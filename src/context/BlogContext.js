@@ -6,7 +6,7 @@ const blogReducer = (state, action) => {
   const { type, payload } = action;
   switch (type) {
     case 'delete_blogpost':
-      return state.filter(blogPost => blogPost.id !== payload)
+      return state.filter(blogPost => blogPost.id !== payload);
     case 'add_blogpost':
       return [...state, { id: Math.floor(Math.random() * 99999), title: payload.title, content: payload.content}];
     default:
@@ -21,4 +21,4 @@ const addBlogPost = dispatch => (title, content, callback) => {
 
 const deleteBlogPost = dispatch => id => dispatch({ type: 'delete_blogpost', payload: id})
 
-export const { Context, Provider } = createDataContext(blogReducer, { addBlogPost, deleteBlogPost }, [])
+export const { Context, Provider } = createDataContext(blogReducer, { addBlogPost, deleteBlogPost }, [{ title: 'TEST POST', content: 'TEST CONTENT', id: 1}])
