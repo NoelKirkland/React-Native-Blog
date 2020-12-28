@@ -6,7 +6,14 @@ import BlogPostForm from '../components/BlogPostForm';
 const CreateScreen = ({ navigation }) => {
   const { addBlogPost } = useContext(Context);
 
-return <BlogPostForm title='Save Blog Post' />
+  return (
+    <BlogPostForm
+      buttonTitle='Create Post'
+      onSubmit={(title, content) => {
+        addBlogPost(title, content, () => navigation.navigate('Index'));
+      }}
+    />
+  );
 };
 
 const styles = StyleSheet.create({});
