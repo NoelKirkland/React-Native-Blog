@@ -1,31 +1,57 @@
 import React, { useReducer } from 'react';
 import createDataContext from './createDataContext';
+import jsonServer from '../api/jsonServer';
+import { call } from 'react-native-reanimated';
 
 
 const blogReducer = (state, action) => {
   const { type, payload } = action;
   switch (type) {
+    case 'get_blogposts':
+      return action.payload;
     case 'edit_blogpost':
       return state.map(blogPost => blogPost.id === payload.id ? action.payload : blogPost);
     case 'delete_blogpost':
       return state.filter(blogPost => blogPost.id !== payload);
-    case 'add_blogpost':
-      return [...state, { id: Math.floor(Math.random() * 99999), title: payload.title, content: payload.content}];
     default:
       return state;
   }
 };
 
-const addBlogPost = dispatch => (title, content, callback) => {
-  dispatch({ type: 'add_blogpost', payload: {title, content}});
-  callback();
+const getBlogPosts = dispatch => {
+  return async () => {
+    const response = await jsonServer.get('/blogposts');
+
+    dispatch({ type: 'get_blogposts', payload: response.data })
+  };
 };
 
-const deleteBlogPost = dispatch => id => dispatch({ type: 'delete_blogpost', payload: id});
+const addBlogPost = dispatch => {
+  return async (title, content, callback) => {
+    await jsonServer.post('/blogposts', { title, content });
 
-const editBlogPost = dispatch => (id, title, content, callback) => {
-  dispatch({ type: 'edit_blogpost', payload: {id, title, content}});
-  callback();
+    if (callback) {
+      callback();
+    }
+  }
+};
+
+const deleteBlogPost = dispatch => async id => {
+  await jsonServer.delete(`/blogposts/${id}`);
+
+  dispatch({ type: 'delete_blogpost', payload: id});
 }
 
-export const { Context, Provider } = createDataContext(blogReducer, { addBlogPost, deleteBlogPost, editBlogPost }, [{ title: 'TEST POST', content: 'TEST CONTENT', id: 1}])
+const editBlogPost = dispatch => async (id, title, content, callback) => {
+  await jsonServer.put(`/blogposts/${id}`, { title, content});
+
+  dispatch({
+    type: 'edit_blogpost',
+    payload: { id, title, content }
+  });
+  if (callback) {
+    callback();
+  }
+}
+
+export const { Context, Provider } = createDataContext(blogReducer, { getBlogPosts, addBlogPost, deleteBlogPost, editBlogPost }, [])
